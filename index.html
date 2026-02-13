@@ -4,8 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For Salna 💖</title>
+    
+    <!-- Block search engines and crawlers -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex, nocache">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    
+    <!-- Prevent social media crawling -->
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:image" content="">
+    <meta name="twitter:card" content="">
+    <meta name="twitter:title" content="">
+    <meta name="twitter:description" content="">
+    
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    
+    <!-- EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -16,7 +33,7 @@
             </div>
             <div class="buttons">
                 <button id="yesBtn" class="btn yes-btn">YES ❤️</button>
-                <button id="noBtn" class="btn no-btn">NO 😅</button> 
+                <button id="noBtn" class="btn no-btn">NO ❌</button> 
             </div>
         </div>
 
@@ -26,10 +43,48 @@
             <div class="gif-container">
                 <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXNreHRzMnBkYnJ4Znh4b3hxOG54Znh4b3hxOG54Znh4b3hxOG54ZiZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/26BRv0ThflsHCqDrG/giphy.gif" alt="Celebration Bear" class="gif">
             </div>
+            <div class="timer-container" id="timer-container" style="display: none;">
+                <p class="timer-text">Please wait<span class="dots" id="dots">...</span></p>
+            </div>
+        </div>
+
+        <!-- Wait Overlay Popup -->
+        <div id="wait-overlay" class="overlay hidden">
+            <div class="popup-card">
+                <h1 class="popup-title">Wait wait wait.. 🤚</h1>
+                <p class="popup-subtitle">Povalle.. please! 🙈</p>
+                <div class="popup-gif">
+                    <img src="https://media.giphy.com/media/FMAkq47XuQmM4jgYgG/giphy.gif" alt="Prithviraj Wait" class="gif">
+                </div>
+                <div class="popup-buttons">
+                    <button id="pokkumBtn" class="popup-btn yes-popup">Pokkum 👍</button>
+                    <button id="enthaBtn" class="popup-btn no-popup">Enthaaa 🤔</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="sorry-card" class="hidden">
+            <h1 class="title">I'm Sorry... 😔</h1>
+            <p class="subtitle">I was just teasing, but now I want to be honest<br>You really mean a lot to me ❤️</p>
+            <div class="gif-container">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXNreHRzMnBkYnJ4Znh4b3hxOG54Znh4b3hxOG54Znh4b3hxOG54ZiZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/3ohs7KViF6rA4aan5u/giphy.gif" alt="Sorry Bear" class="gif">
+            </div>
+            <button id="readLetterBtn" class="btn yes-btn letter-btn" style="margin-top: 20px;">Read Letter 💕</button>
         </div>
     </div>
     
     <canvas id="confetti-canvas"></canvas>
+    
+    <!-- Bot protection -->
+    <script>
+        (function() {
+            const botPatterns = [/bot/i, /crawler/i, /spider/i, /google/i, /bing/i, /facebook/i, /twitter/i];
+            const isBot = botPatterns.some(p => p.test(navigator.userAgent)) || navigator.webdriver;
+            if (isBot) document.body.innerHTML = '<div style="text-align:center;padding:50px;">Access Denied</div>';
+        })();
+    </script>
+    
+    <script src="constants.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

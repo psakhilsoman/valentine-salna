@@ -21,8 +21,8 @@ let isPhysicsActive = false; // Changed from isInitialized to explicit state
 
 const PHYSICS_CONFIG = {
     friction: 0.9,
-    repulsionRadius: 150,
-    repulsionForce: 2.0,
+    repulsionRadius: window.innerWidth < 481 ? 100 : 150, // Smaller radius on mobile
+    repulsionForce: window.innerWidth < 481 ? 1.5 : 2.0,  // Less force on mobile
     boundaryBounce: 0.7
 };
 
@@ -37,6 +37,32 @@ function detachButton() {
     noBtn.style.left = noBtnPosition.x + 'px';
     noBtn.style.top = noBtnPosition.y + 'px';
     noBtn.style.zIndex = '1000'; // Ensure it stays on top
+    
+    // On mobile, ensure button stays within container even after detachment
+    const isMobile = window.innerWidth < 481;
+    if (isMobile) {
+        const container = document.querySelector('.container');
+        const containerRect = container.getBoundingClientRect();
+        const btnRect = noBtn.getBoundingClientRect();
+        const margin = 15;
+        
+        // Adjust position if outside container bounds
+        if (noBtnPosition.x < containerRect.left + margin) {
+            noBtnPosition.x = containerRect.left + margin;
+        }
+        if (noBtnPosition.x > containerRect.right - btnRect.width - margin) {
+            noBtnPosition.x = containerRect.right - btnRect.width - margin;
+        }
+        if (noBtnPosition.y < containerRect.top + margin) {
+            noBtnPosition.y = containerRect.top + margin;
+        }
+        if (noBtnPosition.y > containerRect.bottom - btnRect.height - margin) {
+            noBtnPosition.y = containerRect.bottom - btnRect.height - margin;
+        }
+        
+        noBtn.style.left = noBtnPosition.x + 'px';
+        noBtn.style.top = noBtnPosition.y + 'px';
+    }
     
     isPhysicsActive = true;
 }
@@ -77,7 +103,7 @@ function physicsLoop() {
             noBtnVelocity.y -= Math.sin(angle) * force * PHYSICS_CONFIG.repulsionForce;
             
             if (distance < 50) {
-                 const phrases = ["Nope!", "Too slow!", "Can't catch me!", "Oily!", "Slide!", "Whoops!"];
+                 const phrases = CONFIG.PHRASES.NO_BUTTON_TEASES;
                  noBtn.innerText = phrases[Math.floor(Date.now() / 500) % phrases.length];
             }
         }
@@ -90,23 +116,45 @@ function physicsLoop() {
         noBtnPosition.x += noBtnVelocity.x;
         noBtnPosition.y += noBtnVelocity.y;
 
-        // Boundary checks
-        const noBtnRect = noBtn.getBoundingClientRect(); // Get current size
-        const margin = 10;
+        // Boundary checks - container-based on mobile
+        const noBtnRect = noBtn.getBoundingClientRect();
+        const isMobile = window.innerWidth < 481;
         
-        if (noBtnPosition.x < margin) {
-            noBtnPosition.x = margin;
+        let minX, maxX, minY, maxY;
+        
+        if (isMobile) {
+            // On mobile: constrain to container boundaries for better thumb zone
+            const container = document.querySelector('.container');
+            const containerRect = container.getBoundingClientRect();
+            const margin = 15; // Small margin within container
+            
+            minX = containerRect.left + margin;
+            maxX = containerRect.right - noBtnRect.width - margin;
+            minY = containerRect.top + margin;
+            maxY = containerRect.bottom - noBtnRect.height - margin;
+        } else {
+            // On desktop: use full viewport
+            const margin = 20;
+            minX = margin;
+            maxX = window.innerWidth - noBtnRect.width - margin;
+            minY = margin;
+            maxY = window.innerHeight - noBtnRect.height - margin;
+        }
+        
+        // Apply calculated boundaries
+        if (noBtnPosition.x < minX) {
+            noBtnPosition.x = minX;
             noBtnVelocity.x *= -PHYSICS_CONFIG.boundaryBounce;
-        } else if (noBtnPosition.x > window.innerWidth - noBtnRect.width - margin) {
-            noBtnPosition.x = window.innerWidth - noBtnRect.width - margin;
+        } else if (noBtnPosition.x > maxX) {
+            noBtnPosition.x = maxX;
             noBtnVelocity.x *= -PHYSICS_CONFIG.boundaryBounce;
         }
 
-        if (noBtnPosition.y < margin) {
-            noBtnPosition.y = margin;
+        if (noBtnPosition.y < minY) {
+            noBtnPosition.y = minY;
             noBtnVelocity.y *= -PHYSICS_CONFIG.boundaryBounce;
-        } else if (noBtnPosition.y > window.innerHeight - noBtnRect.height - margin) {
-            noBtnPosition.y = window.innerHeight - noBtnRect.height - margin;
+        } else if (noBtnPosition.y > maxY) {
+            noBtnPosition.y = maxY;
             noBtnVelocity.y *= -PHYSICS_CONFIG.boundaryBounce;
         }
 
@@ -121,9 +169,74 @@ function physicsLoop() {
 // Start loop
 physicsLoop();
 
-// Remove old listeners
-// noBtn.addEventListener('mouseover', moveNoButton);
-// noBtn.addEventListener('click', moveNoButton);
+
+// Initialize EmailJS
+(function() {
+    emailjs.init("PwB4Z7ki5-x-eCbnI");
+})();
+
+// Function to send notification
+function sendNotification(action) {
+    const now = new Date();
+    const actionData = getActionData(action);
+    
+    const templateParams = {
+        action: actionData.title,
+        timestamp: now.toLocaleString('en-IN', { 
+            timeZone: 'Asia/Kolkata',
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        }),
+        message: actionData.message
+    };
+
+    emailjs.send('service_lp0tn1o', 'template_07g3t0c', templateParams)
+        .then(function(response) {
+            console.log('✅ Notification sent successfully!', response.status);
+        }, function(error) {
+            console.log('❌ Failed to send notification:', error);
+        });
+}
+
+// Get action-specific data
+function getActionData(action) {
+    const actions = {
+        'YES': {
+            title: 'SHE SAID YES! 🎉',
+            message: 'Salna clicked YES on your Valentine proposal! Time to celebrate! 🥳💕'
+        },
+        'POKKUM_CLICKED': {
+            title: 'Pokkum Button Clicked 👍',
+            message: 'Salna clicked "Pokkum" (Go ahead) in the wait popup. She wants to hear what you have to say! 😊'
+        },
+        'ENTHAAA_CLICKED': {
+            title: 'Enthaaa Button Clicked 🤔',
+            message: 'Salna clicked "Enthaaa" (What is it?) in the wait popup. She\'s curious about your message! 🤗'
+        },
+        'READING_LETTER': {
+            title: 'Reading Letter 📖',
+            message: 'Salna clicked "Read Letter" and is now reading your heartfelt message. Fingers crossed! 🤞💌'
+        },
+        'LETTER_OPENED': {
+            title: 'Letter Page Opened 💕',
+            message: 'Salna has opened the letter page and the typewriter animation has started! She\'s reading your words as they appear... ✨'
+        },
+        'BACK_CLICKED': {
+            title: 'Back Button Clicked ←',
+            message: 'Salna clicked the back button from the letter page. She might be going back to think about it... 🤔'
+        }
+    };
+    
+    return actions[action] || {
+        title: 'Unknown Action',
+        message: 'An unknown action occurred: ' + action
+    };
+}
 
 // "Yes" button interaction
 yesBtn.addEventListener('click', () => {
@@ -133,7 +246,60 @@ yesBtn.addEventListener('click', () => {
     // Hide the "No" button so it doesn't float around during celebration
     noBtn.style.display = 'none';
     
+    // 🎉 SEND EMAIL NOTIFICATION! 🎉
+    sendNotification('YES');
+    
     startConfetti();
+
+    // After 2 seconds, show simple "please wait..." message
+    setTimeout(() => {
+        const timerContainer = document.getElementById('timer-container');
+        timerContainer.style.display = 'block';
+        
+        // After 3 more seconds, show the wait popup
+        setTimeout(() => {
+            const waitOverlay = document.getElementById('wait-overlay');
+            waitOverlay.classList.remove('hidden');
+        }, 3000);
+        
+    }, 2000);
+});
+
+// Wait Popup Button Interactions
+const pokkumBtn = document.getElementById('pokkumBtn');
+const enthaBtn = document.getElementById('enthaBtn');
+
+// Both buttons lead to the same result - showing the sorry card
+function showSorryCard() {
+    const waitOverlay = document.getElementById('wait-overlay');
+    const celebrationCard = document.getElementById('celebration-card');
+    const sorryCard = document.getElementById('sorry-card');
+    
+    waitOverlay.classList.add('hidden');
+    celebrationCard.classList.add('hidden');
+    sorryCard.classList.remove('hidden');
+    sorryCard.classList.add('fade-in');
+}
+
+pokkumBtn.addEventListener('click', () => {
+    sendNotification('POKKUM_CLICKED');
+    showSorryCard();
+});
+
+enthaBtn.addEventListener('click', () => {
+    sendNotification('ENTHAAA_CLICKED');
+    showSorryCard();
+});
+
+// Letter Interaction - Redirect to separate letter page
+const readLetterBtn = document.getElementById('readLetterBtn');
+
+readLetterBtn.addEventListener('click', () => {
+    // Send notification that she's reading the letter
+    sendNotification('READING_LETTER');
+    
+    // Redirect to the standalone letter page
+    window.location.href = 'letter.html';
 });
 
 // Simple Confetti Implementation
@@ -219,24 +385,14 @@ function render() {
 }
 
 function startConfetti() {
+    // Clear any existing confetti
+    confetti = [];
+    
+    // Initialize confetti once
     initConfetti();
     render();
     
-    // Add continuous confetti
-    setInterval(() => {
-        if(confetti.length < 300) { // maintain some confetti
-            for(let i=0; i<5; i++){
-                confetti.push({
-                    color: colors[Math.floor(randomRange(0, colors.length))],
-                    dimensions: { x: randomRange(10, 20), y: randomRange(10, 30) },
-                    position: { x: randomRange(0, confettiCanvas.width), y: 0 },
-                    rotation: randomRange(0, 2 * Math.PI),
-                    scale: { x: 1, y: 1 },
-                    velocity: { x: randomRange(-5, 5), y: randomRange(0, 10) } // Falling down
-                });
-            }
-        }
-    }, 100);
+    // No continuous confetti - just let the initial burst fall and disappear
 }
 
 // Background Hearts
@@ -244,9 +400,18 @@ function createHeart() {
     const heart = document.createElement('div');
     heart.classList.add('heart-bg');
     heart.innerHTML = '❤️';
-    heart.style.left = Math.random() * 100 + 'vw';
+    
+    // Keep hearts within viewport - no overflow
+    heart.style.left = Math.random() * (window.innerWidth - 50) + 'px'; // Account for heart size
     heart.style.animationDuration = Math.random() * 2 + 3 + 's';
-    heart.style.fontSize = Math.random() * 20 + 10 + 'px';
+    
+    // Smaller hearts on mobile to prevent overflow
+    const isMobile = window.innerWidth < 481;
+    const heartSize = isMobile ? 
+        Math.random() * 10 + 15 : // Mobile: 15-25px
+        Math.random() * 20 + 10;  // Desktop: 10-30px
+    
+    heart.style.fontSize = heartSize + 'px';
     
     document.body.appendChild(heart);
     
@@ -255,4 +420,8 @@ function createHeart() {
     }, 5000);
 }
 
-setInterval(createHeart, 300);
+// Adjust heart frequency based on device
+const isMobile = window.innerWidth < 481;
+const heartInterval = isMobile ? 500 : 300; // Less frequent on mobile
+
+setInterval(createHeart, heartInterval);

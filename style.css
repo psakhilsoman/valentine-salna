@@ -1,39 +1,64 @@
+
 body {
     margin: 0;
-    padding: 0;
+    padding: 5px;
     font-family: 'Varela Round', sans-serif;
     background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%);
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
+    overflow: hidden; /* Prevent all scrolling */
+    position: relative;
+}
+
+@media (min-width: 481px) {
+    body {
+        padding: 10px;
+    }
 }
 
 .container {
     text-align: center;
     background: rgba(255, 255, 255, 0.85);
-    padding: 40px;
-    border-radius: 20px;
+    padding: 20px 15px;
+    border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    max-width: 90%;
-    width: 400px;
+    max-width: 95%;
+    width: 100%;
+    max-width: 400px;
     position: relative;
     z-index: 10;
     backdrop-filter: blur(5px);
 }
 
+@media (min-width: 481px) {
+    .container {
+        padding: 30px 20px;
+        border-radius: 20px;
+        max-width: 450px;
+    }
+}
+
+@media (min-width: 769px) {
+    .container {
+        padding: 40px 30px;
+        max-width: 500px;
+    }
+}
+
 .title {
     color: #ff4d6d;
-    font-size: 28px;
+    font-size: clamp(20px, 5vw, 28px);
     margin-bottom: 20px;
     line-height: 1.4;
 }
 
 .subtitle {
     color: #555;
-    font-size: 18px;
+    font-size: clamp(14px, 4vw, 18px);
     margin-top: 10px;
+    line-height: 1.5;
 }
 
 .gif-container {
@@ -41,26 +66,53 @@ body {
 }
 
 .gif {
-    width: 150px;
+    width: clamp(120px, 30vw, 150px);
     height: auto;
+    max-width: 100%;
+}
+
+/* Simple Timer Styles */
+.timer-container {
+    margin-top: 25px;
+    text-align: center;
+}
+
+.timer-text {
+    color: #ff4d6d;
+    font-size: clamp(16px, 4vw, 18px);
+    font-weight: normal;
+}
+
+.dots {
+    animation: dotAnimation 1.5s infinite;
+}
+
+@keyframes dotAnimation {
+    0% { opacity: 0; }
+    25% { opacity: 1; }
+    50% { opacity: 0; }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
 }
 
 .buttons {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: clamp(10px, 4vw, 20px);
     margin-top: 30px;
-    position: relative; /* Important for absolute positioning context if we wanted, but we'll use viewport relative for NO button */
+    position: relative;
+    flex-wrap: wrap;
 }
 
 .btn {
-    padding: 12px 30px;
-    font-size: 18px;
+    padding: clamp(10px, 2.5vw, 12px) clamp(20px, 6vw, 30px);
+    font-size: clamp(14px, 4vw, 18px);
     border: none;
     border-radius: 50px;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     font-family: 'Varela Round', sans-serif;
+    min-width: 80px;
 }
 
 .yes-btn {
@@ -74,18 +126,54 @@ body {
     background-color: #ff2a52;
 }
 
+/* Special styling for Read Letter button */
+.letter-btn {
+    font-size: clamp(16px, 4.5vw, 20px) !important;
+    padding: clamp(12px, 3vw, 15px) clamp(25px, 7vw, 35px) !important;
+    animation: letterPulse 2s infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.letter-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.letter-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+@keyframes letterPulse {
+    0% { 
+        transform: scale(1); 
+        box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
+    }
+    50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 6px 25px rgba(255, 77, 109, 0.6);
+    }
+    100% { 
+        transform: scale(1); 
+        box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
+    }
+}
+
 .no-btn {
     background-color: #f1f1f1;
     color: #333;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    /* Initially static in the flow */
 }
 
-/* The no-button needs to be able to move freely */
-.no-btn.moving {
-    position: fixed; /* Use fixed to move relative to viewport */
-    z-index: 100;
-}
 
 .hidden {
     display: none;
@@ -103,15 +191,243 @@ body {
 
 /* Floating Hearts Background Animation */
 @keyframes float {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    0% { 
+        transform: translateY(0) rotate(0deg); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: translateY(calc(-100vh - 50px)) rotate(360deg); 
+        opacity: 0; 
+    }
 }
 
 .heart-bg {
-    position: absolute;
+    position: fixed; /* Use fixed to stay within viewport */
     bottom: -10px;
     font-size: 24px;
     color: rgba(255, 77, 109, 0.3);
     animation: float 6s linear infinite;
     z-index: 1;
+    pointer-events: none; /* Don't interfere with interactions */
 }
+
+.fade-in {
+    animation: fadeIn 1s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Overlay Popup Styles */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.popup-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px 15px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    max-width: 90%;
+    width: 100%;
+    max-width: 350px;
+    margin: 0 5px;
+    transform: scale(0.8);
+    animation: popupIn 0.5s ease-out forwards;
+}
+
+@media (min-width: 481px) {
+    .popup-card {
+        padding: 25px 20px;
+        border-radius: 20px;
+        max-width: 400px;
+        margin: 0 10px;
+    }
+}
+
+@media (min-width: 769px) {
+    .popup-card {
+        padding: 30px 25px;
+        max-width: 450px;
+    }
+}
+
+@keyframes popupIn {
+    from { 
+        opacity: 0; 
+        transform: scale(0.8) translateY(-50px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1) translateY(0); 
+    }
+}
+
+.popup-title {
+    color: #ff4d6d;
+    font-size: clamp(18px, 5vw, 24px);
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.popup-subtitle {
+    color: #555;
+    font-size: clamp(14px, 4vw, 16px);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.popup-gif {
+    margin: 15px 0;
+}
+
+.popup-gif .gif {
+    width: clamp(100px, 25vw, 120px);
+    height: auto;
+    max-width: 100%;
+}
+
+.popup-buttons {
+    display: flex;
+    justify-content: center;
+    gap: clamp(10px, 4vw, 15px);
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.popup-btn {
+    padding: clamp(8px, 2vw, 10px) clamp(15px, 5vw, 20px);
+    font-size: clamp(14px, 3.5vw, 16px);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: 'Varela Round', sans-serif;
+    font-weight: bold;
+    min-width: 70px;
+}
+
+.yes-popup {
+    background-color: #ff4d6d;
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
+}
+
+.yes-popup:hover {
+    transform: scale(1.05);
+    background-color: #ff2a52;
+}
+
+.no-popup {
+    background-color: #6c757d;
+    color: white;
+    box-shadow: 0 4px 10px rgba(108, 117, 125, 0.4);
+}
+
+.no-popup:hover {
+    transform: scale(1.05);
+    background-color: #5a6268;
+}
+
+/* Mobile Specific Styles */
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+    }
+    
+    .container {
+        padding: 20px 15px;
+        border-radius: 15px;
+    }
+    
+    .buttons {
+        gap: 15px;
+        margin-top: 25px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+        min-width: 70px;
+    }
+    
+    .popup-card {
+        padding: 20px 15px;
+        margin: 0 5px;
+        border-radius: 15px;
+    }
+    
+    .popup-buttons {
+        gap: 12px;
+        flex-direction: row;
+    }
+    
+    .popup-btn {
+        flex: 1;
+        max-width: 120px;
+    }
+}
+
+/* Tablet Styles */
+@media (min-width: 481px) and (max-width: 768px) {
+    .container {
+        padding: 35px 25px;
+        max-width: 500px;
+    }
+    
+    .popup-card {
+        max-width: 450px;
+        padding: 25px 20px;
+    }
+}
+
+/* Large Mobile Landscape */
+@media (max-width: 768px) and (orientation: landscape) {
+    body {
+        min-height: 100vh;
+        align-items: flex-start;
+        padding-top: 20px;
+    }
+    
+    .container {
+        margin: 20px 0;
+    }
+}
+
+/* Very Small Screens */
+@media (max-width: 320px) {
+    .title {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+    
+    .subtitle {
+        font-size: 13px;
+    }
+    
+    .gif {
+        width: 100px;
+    }
+    
+    .popup-gif .gif {
+        width: 80px;
+    }
+}
+
